@@ -18,12 +18,20 @@ class GetApprControllers extends Controller
         $email_addr = $request->email_addr;
 
         $query = DB::connection('BFIE')
-            ->table('mgr.cb_cash_request_appr_azure')
-            ->select('doc_no', 'email_addr', 'entity_cd')
+            ->table('mgr.cb_cash_request_appr_azure as a')
+            ->select('a.doc_no', 'a.email_addr', 'a.entity_cd', 'a.level_no')
+            ->where('a.status', 'P')
+            ->where('a.email_addr', $email_addr)
+            ->where('a.entity_cd', $entity_cd)
+            ->whereRaw('a.level_no = (
+                select min(b.level_no)
+                from mgr.cb_cash_request_appr_azure b
+                where b.doc_no = a.doc_no
+                and b.entity_cd = a.entity_cd
+                and b.email_addr = a.email_addr
+                and b.status = \'P\'
+            )')
             ->distinct()
-            ->where('status', 'P')
-            ->where('email_addr', $email_addr)
-            ->where('entity_cd', $entity_cd)
             ->get();
 
         return response()->json($query);
