@@ -26,7 +26,6 @@ class GetApprControllers extends Controller
         ->table('mgr.cb_cash_request_appr_azure')
         ->where($where)
         ->get();
-
-        Log::info('First query result: ' . json_encode($query));
+        return response()->json($query);
     }
 }
