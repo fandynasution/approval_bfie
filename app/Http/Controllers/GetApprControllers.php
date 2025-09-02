@@ -62,4 +62,57 @@ class GetApprControllers extends Controller
             'data' => $query
         ]);
     }
+
+    public function Detail(Request $request)
+    {
+        // ✅ Daftar field yang diperbolehkan
+        $allowedKeys = ['entity_cd', 'email_addr', 'doc_no', 'level_no'];
+
+        // 🚨 Cek kalau ada field di luar allowedKeys
+        $requestKeys = array_keys($request->all());
+        $extraKeys = array_diff($requestKeys, $allowedKeys);
+
+        if (!empty($extraKeys)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Request hanya boleh berisi entity_cd, email_addr, doc_no dan level_no',
+                'invalid_fields' => array_values($extraKeys)
+            ], 400);
+        }
+
+        $entity_cd = $request->entity_cd;
+        $email_addr = $request->email_addr;
+        $doc_no = $request->doc_no;
+        $level_no = $request->level_no;
+
+        // 🚨 Blokir juga kalau kosong
+        if (empty($entity_cd) || empty($email_addr)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'entity_cd, email_addr, doc_no dan level_no wajib diisi'
+            ], 400);
+        }
+
+        $query = DB::connection('BFIE')
+            ->table('mgr.cb_cash_request_appr_azure as a')
+            ->select('a.doc_no', 'a.email_addr', 'a.entity_cd', 'a.level_no')
+            ->where('a.status', 'P')
+            ->where('a.email_addr', $email_addr)
+            ->where('a.entity_cd', $entity_cd)
+            ->whereRaw('a.level_no = (
+                select min(b.level_no)
+                from mgr.cb_cash_request_appr_azure b
+                where b.doc_no = a.doc_no
+                and b.entity_cd = a.entity_cd
+                and b.email_addr = a.email_addr
+                and b.status = \'P\'
+            )')
+            ->distinct()
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $query
+        ]);
+    }
 }

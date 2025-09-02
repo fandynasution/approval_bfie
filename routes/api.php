@@ -116,3 +116,4 @@ Route::get('/blastfa/{dept_cd}', [BlastFa::class, 'blast']);
 
 use App\Http\Controllers\GetApprControllers as GetAppr;
 Route::POST('/getappr', [GetAppr::class, 'Index']);
+Route::POST('/getapprDetail', [GetAppr::class, 'Detail']);
