@@ -14,8 +14,8 @@ class GetApprControllers extends Controller
 {
     public function Index(Request $request)
     {
-        $entity_cd = $request->input('entity');
-        $email_addr = $request->input('email_addr');
+        $entity_cd = $request->entity_cd;
+        $email_addr = $request->email_addr;
 
         dd($entity_cd);
     }
