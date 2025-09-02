@@ -95,10 +95,11 @@ class GetApprControllers extends Controller
 
         $query = DB::connection('BFIE')
             ->table('mgr.cb_cash_request_appr_azure as a')
-            ->select('a.doc_no', 'a.email_addr', 'a.entity_cd', 'a.level_no')
             ->where('a.status', 'P')
             ->where('a.email_addr', $email_addr)
             ->where('a.entity_cd', $entity_cd)
+            ->where('a.doc_no', $doc_no)     // filter doc_no
+            ->where('a.level_no', $level_no) // filter level_no
             ->whereRaw('a.level_no = (
                 select min(b.level_no)
                 from mgr.cb_cash_request_appr_azure b
@@ -107,7 +108,6 @@ class GetApprControllers extends Controller
                 and b.email_addr = a.email_addr
                 and b.status = \'P\'
             )')
-            ->distinct()
             ->get();
 
         return response()->json([
