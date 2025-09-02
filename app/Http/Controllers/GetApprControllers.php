@@ -14,8 +14,31 @@ class GetApprControllers extends Controller
 {
     public function Index(Request $request)
     {
+        // ✅ Daftar field yang diperbolehkan
+        $allowedKeys = ['entity_cd', 'email_addr'];
+
+        // 🚨 Cek kalau ada field di luar allowedKeys
+        $requestKeys = array_keys($request->all());
+        $extraKeys = array_diff($requestKeys, $allowedKeys);
+
+        if (!empty($extraKeys)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Request hanya boleh berisi entity_cd dan email_addr',
+                'invalid_fields' => array_values($extraKeys)
+            ], 400);
+        }
+
         $entity_cd = $request->entity_cd;
         $email_addr = $request->email_addr;
+
+        // 🚨 Blokir juga kalau kosong
+        if (empty($entity_cd) || empty($email_addr)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'entity_cd dan email_addr wajib diisi'
+            ], 400);
+        }
 
         $query = DB::connection('BFIE')
             ->table('mgr.cb_cash_request_appr_azure as a')
@@ -34,6 +57,9 @@ class GetApprControllers extends Controller
             ->distinct()
             ->get();
 
-        return response()->json($query);
+        return response()->json([
+            'success' => true,
+            'data' => $query
+        ]);
     }
 }
