@@ -17,6 +17,16 @@ class GetApprControllers extends Controller
         $entity_cd = $request->entity_cd;
         $email_addr = $request->email_addr;
 
-        dd($entity_cd);
+        $where = array(
+            'entity_cd'     => $entity_cd,
+            'email_addr'      => $email_addr,
+        );
+
+        $query = DB::connection('BFIE')
+        ->table('mgr.cb_cash_request_appr_azure')
+        ->where($where)
+        ->get();
+
+        Log::info('First query result: ' . json_encode($query));
     }
 }
