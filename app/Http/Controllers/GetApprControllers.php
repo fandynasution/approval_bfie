@@ -115,55 +115,11 @@ class GetApprControllers extends Controller
             $details = [];
 
             if ($item->module === 'PO' && $item->type === 'Q') {
-                // join header & detail
-                $details = DB::connection('BFIE')
-                    ->table('mgr.po_request_hd as h')
-                    ->join('mgr.po_request_dt as d', function($join) {
-                        $join->on('h.entity_cd', '=', 'd.entity_cd')
-                            ->on('h.request_no', '=', 'd.request_no');
-                    })
-                    ->select(
-                        'h.descs',
-                        'h.currency_cd',
-                        'h.source',
-                        DB::raw('ISNULL(SUM(d.total_price), 0.00) as total_price')
-                    )
-                    ->where('h.entity_cd', $item->entity_cd)
-                    ->where('h.request_no', $item->doc_no)
-                    ->groupBy('h.descs', 'h.currency_cd', 'h.source')
-                    ->get(); // karena hasilnya 1 row, bisa pakai first()
+                $details = $this->getPoRequestDetails($item->entity_cd, $item->doc_no);
             } else if ($item->module === 'PO' && $item->type === 'A') {
-                $details = DB::connection('BFIE')
-                ->table('mgr.po_orderhd as h')
-                ->join('mgr.po_orderdt as d', function($join) {
-                    $join->on('h.entity_cd', '=', 'd.entity_cd')
-                        ->on('h.order_no', '=', 'd.order_no');
-                })
-                ->select(
-                    'h.remark',
-                    'h.remarks',
-                    'h.currency_cd',
-                    DB::raw("
-                        CASE 
-                            WHEN h.currency_cd = 'IDR' 
-                                THEN (
-                                    SELECT TOP 1 a.amount 
-                                    FROM mgr.cb_cash_request_appr a 
-                                    WHERE a.entity_cd = h.entity_cd 
-                                    AND a.doc_no = h.order_no
-                                )
-                            ELSE (
-                                    SELECT TOP 1 h2.po_amt 
-                                    FROM mgr.po_orderhd h2 
-                                    WHERE h2.entity_cd = h.entity_cd 
-                                    AND h2.order_no = h.order_no
-                                )
-                        END as amount
-                    ")
-                )
-                    ->where('h.entity_cd', $item->entity_cd)
-                    ->where('h.order_no', $item->doc_no)
-                    ->get();
+                $details = $this->getPoOrderDetails($item->entity_cd, $item->doc_no);
+            } else if ($item->module === 'PO' && $item->type === 'S') {
+                $details = $this->getPoOrderDetails($item->entity_cd, $item->doc_no);
             }
 
             // tambahkan sub array "details"
@@ -176,5 +132,68 @@ class GetApprControllers extends Controller
             'success' => true,
             'data' => $data
         ]);
+    }
+
+    private function getPoRequestDetails($entity_cd, $doc_no)
+    {
+        return DB::connection('BFIE')
+            ->table('mgr.po_request_hd as h')
+            ->join('mgr.po_request_dt as d', function($join) {
+                $join->on('h.entity_cd', '=', 'd.entity_cd')
+                    ->on('h.request_no', '=', 'd.request_no');
+            })
+            ->select(
+                'h.descs',
+                'h.currency_cd',
+                'h.source',
+                DB::raw('ISNULL(SUM(d.total_price), 0.00) as total_price')
+            )
+            ->where('h.entity_cd', $entity_cd)
+            ->where('h.request_no', $doc_no)
+            ->groupBy('h.descs', 'h.currency_cd', 'h.source')
+            ->get();
+    }
+
+    private function getPoOrderDetails($entity_cd, $doc_no)
+    {
+        return DB::connection('BFIE')
+            ->table('mgr.po_orderhd as h')
+            ->join('mgr.po_orderdt as d', function($join) {
+                $join->on('h.entity_cd', '=', 'd.entity_cd')
+                    ->on('h.order_no', '=', 'd.order_no');
+            })
+            ->select(
+                'h.remark',
+                'h.remarks',
+                'h.currency_cd',
+                DB::raw("
+                    CASE 
+                        WHEN h.currency_cd = 'IDR' 
+                            THEN (
+                                SELECT TOP 1 a.amount 
+                                FROM mgr.cb_cash_request_appr a 
+                                WHERE a.entity_cd = h.entity_cd 
+                                AND a.doc_no = h.order_no
+                            )
+                        ELSE (
+                                SELECT TOP 1 h2.po_amt 
+                                FROM mgr.po_orderhd h2 
+                                WHERE h2.entity_cd = h.entity_cd 
+                                AND h2.order_no = h.order_no
+                            )
+                    END as amount
+                "),
+                DB::raw("
+                    (
+                        SELECT STRING_AGG(s.supplier_name, '; ')
+                        FROM mgr.v_po_quote_compare_non_cor s
+                        WHERE s.entity_cd = h.entity_cd
+                        AND s.doc_no = h.order_no
+                    ) as supplier_name
+                ")
+            )
+            ->where('h.entity_cd', $entity_cd)
+            ->where('h.order_no', $doc_no)
+            ->get();
     }
 }
