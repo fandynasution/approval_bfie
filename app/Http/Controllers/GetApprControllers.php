@@ -132,6 +132,38 @@ class GetApprControllers extends Controller
                     ->where('h.request_no', $item->doc_no)
                     ->groupBy('h.descs', 'h.currency_cd', 'h.source')
                     ->get(); // karena hasilnya 1 row, bisa pakai first()
+            } else if ($item->module === 'PO' && $item->type === 'A') {
+                $details = DB::connection('BFIE')
+                ->table('mgr.po_orderhd as h')
+                ->join('mgr.po_orderdt as d', function($join) {
+                    $join->on('h.entity_cd', '=', 'd.entity_cd')
+                        ->on('h.order_no', '=', 'd.order_no');
+                })
+                ->select(
+                    'h.remark',
+                    'h.remarks',
+                    'h.currency_cd',
+                    DB::raw("
+                        CASE 
+                            WHEN h.currency_cd = 'IDR' 
+                                THEN (
+                                    SELECT TOP 1 a.amount 
+                                    FROM mgr.cb_cash_request_appr a 
+                                    WHERE a.entity_cd = h.entity_cd 
+                                    AND a.doc_no = h.order_no
+                                )
+                            ELSE (
+                                    SELECT TOP 1 h2.po_amt 
+                                    FROM mgr.po_orderhd h2 
+                                    WHERE h2.entity_cd = h.entity_cd 
+                                    AND h2.order_no = h.order_no
+                                )
+                        END as amount
+                    ")
+                )
+                    ->where('h.entity_cd', $item->entity_cd)
+                    ->where('h.order_no', $item->doc_no)
+                    ->get();
             }
 
             // tambahkan sub array "details"
