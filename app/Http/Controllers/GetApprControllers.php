@@ -120,11 +120,11 @@ class GetApprControllers extends Controller
                     ->table('mgr.po_request_hd as h')
                     ->join('mgr.po_request_dt as d', function($join) {
                         $join->on('h.entity_cd', '=', 'd.entity_cd')
-                            ->on('h.doc_no', '=', 'd.doc_no');
+                            ->on('h.request_no', '=', 'd.request_no');
                     })
                     ->select('d.item_cd', 'd.qty', 'd.uom', 'd.price')
                     ->where('h.entity_cd', $item->entity_cd)
-                    ->where('h.doc_no', $item->doc_no)
+                    ->where('h.request_no', $item->doc_no)
                     ->get();
             }
 
