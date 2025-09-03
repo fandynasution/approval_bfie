@@ -122,7 +122,7 @@ class GetApprControllers extends Controller
                         $join->on('h.entity_cd', '=', 'd.entity_cd')
                             ->on('h.request_no', '=', 'd.request_no');
                     })
-                    ->select('d.item_cd', 'd.qty', 'd.uom', 'd.price')
+                    ->select('d.descs', 'd.currency_cd', 'd.source', 'h.isnull(sum(total_price),0.00)')
                     ->where('h.entity_cd', $item->entity_cd)
                     ->where('h.request_no', $item->doc_no)
                     ->get();
