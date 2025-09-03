@@ -122,10 +122,16 @@ class GetApprControllers extends Controller
                         $join->on('h.entity_cd', '=', 'd.entity_cd')
                             ->on('h.request_no', '=', 'd.request_no');
                     })
-                    ->select('d.descs', 'd.currency_cd', 'd.source', 'h.isnull(sum(total_price),0.00)')
+                    ->select(
+                        'h.descs',
+                        'h.currency_cd',
+                        'h.source',
+                        DB::raw('ISNULL(SUM(d.total_price), 0.00) as total_price')
+                    )
                     ->where('h.entity_cd', $item->entity_cd)
                     ->where('h.request_no', $item->doc_no)
-                    ->get();
+                    ->groupBy('h.descs', 'h.currency_cd', 'h.source')
+                    ->get(); // karena hasilnya 1 row, bisa pakai first()
             }
 
             // tambahkan sub array "details"
