@@ -158,7 +158,7 @@ class GetApprControllers extends Controller
     {
         return DB::connection('BFIE')
             ->table('mgr.po_orderhd as h')
-            ->join('mgr.po_orderdt as d', function($join) {
+            ->join('mgr.po_orderdt as d', function ($join) {
                 $join->on('h.entity_cd', '=', 'd.entity_cd')
                     ->on('h.order_no', '=', 'd.order_no');
             })
@@ -169,27 +169,34 @@ class GetApprControllers extends Controller
                 DB::raw("
                     CASE 
                         WHEN h.currency_cd = 'IDR' 
-                            THEN (
+                            THEN ISNULL((
                                 SELECT TOP 1 a.amount 
                                 FROM mgr.cb_cash_request_appr a 
                                 WHERE a.entity_cd = h.entity_cd 
                                 AND a.doc_no = h.order_no
-                            )
-                        ELSE (
+                            ), 0.00)
+                        ELSE ISNULL((
                                 SELECT TOP 1 h2.po_amt 
                                 FROM mgr.po_orderhd h2 
                                 WHERE h2.entity_cd = h.entity_cd 
                                 AND h2.order_no = h.order_no
-                            )
-                    END as amount
+                            ), 0.00)
+                    END AS amount
                 "),
                 DB::raw("
                     (
-                        SELECT STRING_AGG(s.supplier_name, '; ')
-                        FROM mgr.v_po_quote_compare_non_cor s
+                        SELECT ISNULL(
+                            STRING_AGG(
+                                CASE
+                                    WHEN s.supplier_name IS NULL THEN 'No Supplier'
+                                    ELSE REPLACE(REPLACE(REPLACE(REPLACE(s.supplier_name, CHAR(10), ''), CHAR(9), ''), CHAR(13), ''), '\"', '')
+                                END, '; '
+                            ), 'No Supplier'
+                        )
+                        FROM mgr.v_po_quote_compare_non_cor s WITH (NOLOCK)
                         WHERE s.entity_cd = h.entity_cd
                         AND s.doc_no = h.order_no
-                    ) as supplier_name
+                    ) AS supplier_name
                 ")
             )
             ->where('h.entity_cd', $entity_cd)
