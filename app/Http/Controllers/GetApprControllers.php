@@ -111,9 +111,32 @@ class GetApprControllers extends Controller
             )')
             ->get();
 
+        $data = $query->map(function($item) {
+            $details = [];
+
+            if ($item->module === 'PO' && $item->type === 'Q') {
+                // join header & detail
+                $details = DB::connection('BFIE')
+                    ->table('mgr.po_request_hd as h')
+                    ->join('mgr.po_request_dt as d', function($join) {
+                        $join->on('h.entity_cd', '=', 'd.entity_cd')
+                            ->on('h.doc_no', '=', 'd.doc_no');
+                    })
+                    ->select('d.item_cd', 'd.qty', 'd.uom', 'd.price')
+                    ->where('h.entity_cd', $item->entity_cd)
+                    ->where('h.doc_no', $item->doc_no)
+                    ->get();
+            }
+
+            // tambahkan sub array "details"
+            $item->details = $details;
+
+            return $item;
+        });
+
         return response()->json([
             'success' => true,
-            'data' => $query
+            'data' => $data
         ]);
     }
 }
