@@ -95,7 +95,7 @@ class GetApprControllers extends Controller
 
         $query = DB::connection('BFIE')
             ->table('mgr.cb_cash_request_appr_azure as a')
-            ->select('a.doc_no', 'a.entity_cd', 'a.level_no', 'a.type', 'a.module') // pilih kolom
+            ->select('a.doc_no', 'a.entity_cd', 'a.level_no', 'a.type', 'a.module, a.ref_no') // pilih kolom
             ->where('a.status', 'P')
             ->where('a.email_addr', $email_addr)
             ->where('a.entity_cd', $entity_cd)
