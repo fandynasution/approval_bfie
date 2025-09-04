@@ -27,9 +27,38 @@ class CbModuleService
                     $join->on('hd.entity_cd', '=', 'dt.entity_cd')
                         ->on('hd.doc_no', '=', 'dt.doc_no');
                 })
-                ->select('hd.descs', 'hd.doc_no', 'dt.amount')
-                ->where('hd.entity_cd',$entity_cd)
-                ->where('hd.doc_no',$doc_no)
+                ->select(
+                    'hd.descs',
+                    'hd.doc_no',
+                    'dt.amount',
+                    DB::raw("
+                        ISNULL((
+                            SELECT STRING_AGG(
+                                CASE
+                                    WHEN url_file_attachment IS NULL THEN 'EMPTY'
+                                    WHEN CHARINDEX('http', url_file_attachment) = 0 THEN 'EMPTY'
+                                    ELSE url_file_attachment
+                                END, '; '
+                            )
+                            FROM mgr.cb_fupd_file_attach WITH (NOLOCK)
+                            WHERE entity_cd = hd.entity_cd AND doc_no = hd.doc_no
+                        ), 'EMPTY') as url_file
+                    "),
+                    DB::raw("
+                        ISNULL((
+                            SELECT STRING_AGG(
+                                CASE
+                                    WHEN file_name IS NULL THEN 'EMPTY'
+                                    ELSE file_name
+                                END, '; '
+                            )
+                            FROM mgr.cb_fupd_file_attach WITH (NOLOCK)
+                            WHERE entity_cd = hd.entity_cd AND doc_no = hd.doc_no
+                        ), 'EMPTY') as file_name
+                    ")
+                )
+                ->where('hd.entity_cd', $entity_cd)
+                ->where('hd.doc_no', $doc_no)
                 ->get();
         } catch (\Exception $e) {
             \Log::error('getCbFupdDetails error: '.$e->getMessage());
