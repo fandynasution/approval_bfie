@@ -18,18 +18,67 @@ class PoModuleService
 
     private function getPoRequestDetails($entity_cd, $doc_no)
     {
+        var_dump($entity_cd);
+        var_dump($doc_no);
         try {
-            return DB::connection('BFIE')
+            $results = DB::connection('BFIE')
                 ->table('mgr.po_request_hd as h')
                 ->join('mgr.po_request_dt as d', function($join) {
                     $join->on('h.entity_cd','=','d.entity_cd')
-                         ->on('h.request_no','=','d.request_no');
+                        ->on('h.request_no','=','d.request_no');
                 })
-                ->select('h.descs','h.currency_cd','h.source',DB::raw('ISNULL(SUM(d.total_price),0.00) as total_price'))
+                ->select(
+                    'h.descs',
+                    'h.currency_cd',
+                    'h.source',
+                    DB::raw('ISNULL(SUM(d.total_price),0.00) as total_price'),
+                    DB::raw("
+                        ISNULL((
+                            SELECT STRING_AGG(
+                                CASE
+                                    WHEN url_file_attachment IS NULL THEN ''
+                                    WHEN CHARINDEX('http', url_file_attachment) = 0 THEN ''
+                                    ELSE url_file_attachment
+                                END, ';'
+                            )
+                            FROM mgr.po_request_file_attach WITH (NOLOCK)
+                            WHERE entity_cd = '".addslashes($entity_cd)."' 
+                            AND request_no = '".addslashes($doc_no)."'
+                        ), '') as url_file
+                    "),
+                    DB::raw("
+                        ISNULL((
+                            SELECT STRING_AGG(
+                                CASE
+                                    WHEN file_name IS NULL THEN 'EMPTY'
+                                    ELSE file_name
+                                END, ';'
+                            )
+                            FROM mgr.po_request_file_attach WITH (NOLOCK)
+                            WHERE entity_cd = '".addslashes($entity_cd)."' 
+                            AND request_no = '".addslashes($doc_no)."'
+                        ), '') as file_name
+                    ")
+                )
                 ->where('h.entity_cd',$entity_cd)
                 ->where('h.request_no',$doc_no)
                 ->groupBy('h.descs','h.currency_cd','h.source')
                 ->get();
+
+            // convert string jadi array []
+            $results->transform(function ($item) {
+                $item->url_file = empty($item->url_file)
+                    ? []
+                    : array_filter(explode(';', $item->url_file));
+
+                $item->file_name = empty($item->file_name)
+                    ? []
+                    : array_filter(explode(';', $item->file_name));
+
+                return $item;
+            });
+
+            return $results;
         } catch (\Exception $e) {
             \Log::error('getPoRequestDetails error: '.$e->getMessage());
             return collect([]);
@@ -39,7 +88,7 @@ class PoModuleService
     private function getPoOrderDetails($entity_cd, $doc_no)
     {
         try {
-            return DB::connection('BFIE')
+            $results = DB::connection('BFIE')
                 ->table('mgr.po_orderhd as h')
                 ->join('mgr.po_orderdt as d', function ($join) {
                     $join->on('h.entity_cd', '=', 'd.entity_cd')
@@ -80,11 +129,53 @@ class PoModuleService
                             WHERE s.entity_cd = h.entity_cd
                             AND s.doc_no = h.order_no
                         ) AS supplier_name
+                    "),
+                    DB::raw("
+                        ISNULL((
+                            SELECT STRING_AGG(
+                                CASE
+                                    WHEN url_file_attachment IS NULL THEN ''
+                                    WHEN CHARINDEX('http', url_file_attachment) = 0 THEN ''
+                                    ELSE url_file_attachment
+                                END, ';'
+                            )
+                            FROM mgr.po_order_file_attach WITH (NOLOCK)
+                            WHERE entity_cd = '".addslashes($entity_cd)."' 
+                            AND doc_no = '".addslashes($doc_no)."'
+                        ), '') as url_file
+                    "),
+                    DB::raw("
+                        ISNULL((
+                            SELECT STRING_AGG(
+                                CASE
+                                    WHEN file_name IS NULL THEN 'EMPTY'
+                                    ELSE file_name
+                                END, ';'
+                            )
+                            FROM mgr.po_order_file_attach WITH (NOLOCK)
+                            WHERE entity_cd = '".addslashes($entity_cd)."' 
+                            AND doc_no = '".addslashes($doc_no)."'
+                        ), '') as file_name
                     ")
                 )
                 ->where('h.entity_cd', $entity_cd)
                 ->where('h.order_no', $doc_no)
                 ->get();
+
+            // convert string jadi array []
+            $results->transform(function ($item) {
+                $item->url_file = empty($item->url_file)
+                    ? []
+                    : array_filter(explode(';', $item->url_file));
+
+                $item->file_name = empty($item->file_name)
+                    ? []
+                    : array_filter(explode(';', $item->file_name));
+
+                return $item;
+            });
+
+            return $results;
         } catch (\Exception $e) {
             \Log::error('getPoOrderDetails error: '.$e->getMessage());
             return collect([]);
@@ -94,7 +185,7 @@ class PoModuleService
     private function getPoSelectionDetails($entity_cd, $doc_no, $ref_no)
     {
         try {
-            return DB::connection('BFIE')
+            $results = DB::connection('BFIE')
                 ->table('mgr.po_quote_group as gr')
                 ->join('mgr.po_quote_hd as hd', function ($join) {
                     $join->on('gr.entity_cd', '=', 'hd.entity_cd')
@@ -125,12 +216,54 @@ class PoModuleService
                             AND v.doc_no    = gr.doc_no
                             AND v.request_no = hd.copy_ref_no
                         ) AS supplier_name
+                    "),
+                    DB::raw("
+                        ISNULL((
+                            SELECT STRING_AGG(
+                                CASE
+                                    WHEN url_file_attachment IS NULL THEN ''
+                                    WHEN CHARINDEX('http', url_file_attachment) = 0 THEN ''
+                                    ELSE url_file_attachment
+                                END, ';'
+                            )
+                            FROM mgr.po_selection_file_attach WITH (NOLOCK)
+                            WHERE entity_cd = '".addslashes($entity_cd)."' 
+                            AND doc_no = '".addslashes($doc_no)."'
+                        ), '') as url_file
+                    "),
+                    DB::raw("
+                        ISNULL((
+                            SELECT STRING_AGG(
+                                CASE
+                                    WHEN file_name IS NULL THEN 'EMPTY'
+                                    ELSE file_name
+                                END, ';'
+                            )
+                            FROM mgr.po_selection_file_attach WITH (NOLOCK)
+                            WHERE entity_cd = '".addslashes($entity_cd)."' 
+                            AND doc_no = '".addslashes($doc_no)."'
+                        ), '') as file_name
                     ")
                 )
                 ->where('gr.entity_cd', $entity_cd)
                 ->where('gr.doc_no', $doc_no)
                 ->groupBy('gr.entity_cd', 'gr.doc_no', 'hd.currency_cd', 'hd.copy_ref_no')
                 ->get();
+
+            // convert string jadi array []
+            $results->transform(function ($item) {
+                $item->url_file = empty($item->url_file)
+                    ? []
+                    : array_filter(explode(';', $item->url_file));
+
+                $item->file_name = empty($item->file_name)
+                    ? []
+                    : array_filter(explode(';', $item->file_name));
+
+                return $item;
+            });
+
+            return $results;
         } catch (\Exception $e) {
             \Log::error('getPoSelectionDetails error: '.$e->getMessage());
             return collect([]);

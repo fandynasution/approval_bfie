@@ -47,6 +47,10 @@ class GetApprControllers extends Controller
             // 🌟 Query database
             $approvals = DB::connection('BFIE')
             ->table('mgr.cb_cash_request_appr_azure as a')
+            ->join('mgr.cf_approval_type as t', function($join) {
+                $join->on('a.type', '=', 't.type')
+                     ->on('a.module', '=', 't.module');
+            })
             ->select(
                 'a.doc_no',
                 'a.entity_cd',
@@ -55,6 +59,7 @@ class GetApprControllers extends Controller
                 'a.module',
                 'a.ref_no', 
                 'a.trx_type',
+                't.descs as approval_descs',
                 DB::raw("MAX(CASE WHEN a.app_status = 'A' THEN a.app_url END) as link_approval"),
                 DB::raw("MAX(CASE WHEN a.app_status = 'R' THEN a.app_url END) as link_revise"),
                 DB::raw("MAX(CASE WHEN a.app_status = 'C' THEN a.app_url END) as link_reject")
@@ -77,7 +82,8 @@ class GetApprControllers extends Controller
                 'a.type',
                 'a.module',
                 'a.ref_no',
-                'a.trx_type'
+                'a.trx_type',
+                't.descs'
             )
             ->get();
 
@@ -89,7 +95,7 @@ class GetApprControllers extends Controller
                     } else if($item->module === 'CB') {
                         $item->additional = $cbModuleService->getDetails($item->type, $item->entity_cd, $item->doc_no, $item->trx_type);
                     } else if($item->module === 'CM') {
-                        $item->additional = $cmModuleService->getDetails($item->type, $item->entity_cd, $item->doc_noy);
+                        $item->additional = $cmModuleService->getDetails($item->type, $item->entity_cd, $item->doc_no, $item->ref_no);
                     }
                 } catch (\Exception $e) {
                     \Log::error("Detail sub-query error for doc_no {$item->doc_no}: ".$e->getMessage());
