@@ -87,11 +87,11 @@ class CbPpuController extends Controller
         $encryptedData = Crypt::encrypt($data2Encrypt);
     
         try {
-            $emailAddresses = strtolower($request->email_addr);
-            $approve_seq = $request->approve_seq;
-            $entity_cd = $request->entity_cd;
-            $doc_no = $request->doc_no;
-            $level_no = $request->level_no;
+            $emailAddresses = strtolower($data["email_addr"]);
+            $approve_seq = $data["approve_seq"];
+            $entity_cd = $data["entity_cd"];
+            $doc_no = $data["doc_no"];
+            $level_no = $data["level_no"];
         
             // Check if email addresses are provided and not empty
             if (!empty($emailAddresses)) {
