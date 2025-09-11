@@ -18,7 +18,7 @@ class ApprListControllers extends Controller
 
     public function getData()
     {
-        $query = DB::connection('BTID')
+        $query = DB::connection('BFIE')
             ->table('mgr.cb_cash_request_appr')
             ->where('status', 'P')
             ->whereNotNull('currency_cd')
@@ -44,7 +44,7 @@ class ApprListControllers extends Controller
         \Log::channel('resend')->info("Received Data: ", compact('entity_cd', 'doc_no', 'user_id'));
 
         // Menggunakan satu koneksi untuk mengurangi overhead
-        $db = DB::connection('BTID');
+        $db = DB::connection('BFIE');
 
         // Mengambil semua data yang dibutuhkan dalam satu query
         $query = $db->table('mgr.cb_cash_request_appr')

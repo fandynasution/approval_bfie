@@ -12,7 +12,7 @@
         <!-- DataTables CSS -->
         <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
 
-        <link rel="shortcut icon" type="image/x-icon" href="{{ url('public/images/KuraKuraBali-iconew.ico') }}">
+        <link rel="shortcut icon" type="image/x-icon" href="{{ url('public/images/BFIE_icon.ico') }}">
 
         <!-- jQuery (Pastikan jQuery disertakan) -->
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>

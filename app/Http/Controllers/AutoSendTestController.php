@@ -26,7 +26,7 @@ class AutoSendTestController extends Controller
 {
     public function index()
     {
-        $query = DB::connection('BTID')
+        $query = DB::connection('BFIE')
             ->table('mgr.cb_cash_request_appr')
             ->whereNotNull('sent_mail')
             ->where('status', 'P')
@@ -89,7 +89,7 @@ class AutoSendTestController extends Controller
                 'user_name' => $user_id
             );
 
-            $queryUg = DB::connection('BTID')
+            $queryUg = DB::connection('BFIE')
             ->table('mgr.security_groupings')
             ->where($whereUg)
             ->get();
@@ -107,7 +107,7 @@ class AutoSendTestController extends Controller
 
             if ($type == 'S' && $module == "PO") {
                 $date = date('d-m-Y', strtotime($doc_date));
-                $pdo = DB::connection('BTID')->getPdo();
+                $pdo = DB::connection('BFIE')->getPdo();
                 $sth = $pdo->prepare("SET NOCOUNT ON; EXEC mgr.x_send_mail_approval_po_selection ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?;");
                 $sth->bindParam(1, $entity_cd);
                 $sth->bindParam(2, $project_no);
@@ -123,7 +123,7 @@ class AutoSendTestController extends Controller
 
                 var_dump("SET NOCOUNT ON; EXEC mgr.x_send_mail_approval_po_selection ".$entity_cd.", ".$project_no.",".$doc_no.",".$ref_no.",".$date.",".$status.",".$downLevel.",".$user_group.",".$user_id.",".$supervisor.",".$reason);
             } else if ($type == 'Q' && $module == "PO") {
-                $pdo = DB::connection('BTID')->getPdo();
+                $pdo = DB::connection('BFIE')->getPdo();
                 $sth = $pdo->prepare("SET NOCOUNT ON; EXEC mgr.x_send_mail_approval_po_request ?, ?, ?, ?, ?, ?, ?, ?, ?;");
                 $sth->bindParam(1, $entity_cd);
                 $sth->bindParam(2, $project_no);
@@ -137,7 +137,7 @@ class AutoSendTestController extends Controller
                 var_dump("SET NOCOUNT ON; EXEC mgr.x_send_mail_approval_po_request ".$entity_cd.", ".$project_no.",".$doc_no.",".$status.",".$downLevel.",".$user_group.",".$user_id.",".$supervisor.",".$reason);
             } else {
                 if ($module == 'CM') {
-                    $pdo = DB::connection('BTID')->getPdo();
+                    $pdo = DB::connection('BFIE')->getPdo();
                     $sth = $pdo->prepare("SET NOCOUNT ON; EXEC ".$exec." ?, ?, ?, ?, ?, ?, ?, ?, ?, ?;");
                     $sth->bindParam(1, $entity_cd);
                     $sth->bindParam(2, $project_no);
@@ -151,7 +151,7 @@ class AutoSendTestController extends Controller
                     $sth->bindParam(10, $reason);
                     var_dump("SET NOCOUNT ON; EXEC ".$exec." ".$entity_cd.", ".$project_no.",".$doc_no.",".$ref_no.",".$status.",".$downLevel.",".$user_group.",".$user_id.",".$supervisor.",".$reason);
                 } else {
-                    $pdo = DB::connection('BTID')->getPdo();
+                    $pdo = DB::connection('BFIE')->getPdo();
                     $sth = $pdo->prepare("SET NOCOUNT ON; EXEC ".$exec." ?, ?, ?, ?, ?, ?, ?, ?, ?, ?;");
                     $sth->bindParam(1, $entity_cd);
                     $sth->bindParam(2, $project_no);

@@ -49,17 +49,21 @@ class GetApprControllers extends Controller
             ->table('mgr.cb_cash_request_appr_azure as a')
             ->join('mgr.cf_approval_type as t', function($join) {
                 $join->on('a.type', '=', 't.type')
-                     ->on('a.module', '=', 't.module');
+                    ->on('a.module', '=', 't.module');
             })
+            ->leftJoin('mgr.cf_dept as d', 'a.dept_cd', '=', 'd.dept_cd') // join ke cf_dept
             ->select(
                 'a.doc_no',
                 'a.entity_cd',
                 'a.level_no',
                 'a.type',
+                'a.doc_date',
+                'a.descs',
                 'a.module',
                 'a.ref_no', 
                 'a.trx_type',
                 't.descs as approval_descs',
+                'd.descs as dept_descs', // ambil descs dari cf_dept
                 DB::raw("MAX(CASE WHEN a.app_status = 'A' THEN a.app_url END) as link_approval"),
                 DB::raw("MAX(CASE WHEN a.app_status = 'R' THEN a.app_url END) as link_revise"),
                 DB::raw("MAX(CASE WHEN a.app_status = 'C' THEN a.app_url END) as link_reject")
@@ -80,10 +84,13 @@ class GetApprControllers extends Controller
                 'a.entity_cd',
                 'a.level_no',
                 'a.type',
+                'a.doc_date',
+                'a.descs',
                 'a.module',
                 'a.ref_no',
                 'a.trx_type',
-                't.descs'
+                't.descs',
+                'd.descs' // tambahin ke group by
             )
             ->get();
 
@@ -127,6 +134,8 @@ class GetApprControllers extends Controller
                 'a.entity_cd',
                 'a.level_no',
                 'a.type',
+                'a.doc_date',
+                'a.descs',
                 'a.module',
                 'a.ref_no', 
                 'a.trx_type',
@@ -152,6 +161,8 @@ class GetApprControllers extends Controller
                 'a.entity_cd',
                 'a.level_no',
                 'a.type',
+                'a.doc_date',
+                'a.descs',
                 'a.module',
                 'a.ref_no',
                 'a.trx_type'

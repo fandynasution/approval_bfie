@@ -26,7 +26,7 @@ class GetAutoSendController extends Controller
 {
     public function index()
     {
-        $query = DB::connection('BTID')
+        $query = DB::connection('BFIE')
         ->table('mgr.cb_cash_request_appr')
         ->whereNull('sent_mail_date')
         ->where('status', 'P')
@@ -66,7 +66,7 @@ class GetAutoSendController extends Controller
                 'user_name' => $user_id
             );
 
-            $queryUg = DB::connection('BTID')
+            $queryUg = DB::connection('BFIE')
             ->table('mgr.security_groupings')
             ->where($whereUg)
             ->get();
@@ -77,7 +77,7 @@ class GetAutoSendController extends Controller
                 'name' => $user_id
             );
 
-            $querysupervisor = DB::connection('BTID')
+            $querysupervisor = DB::connection('BFIE')
             ->table('mgr.security_users')
             ->where($wheresupervisor)
             ->get();
@@ -110,7 +110,7 @@ class GetAutoSendController extends Controller
                     'level_no'  => $downLevel
                 );
     
-                $querybefore = DB::connection('BTID')
+                $querybefore = DB::connection('BFIE')
                 ->table('mgr.cb_cash_request_appr')
                 ->where($wherebefore)
                 ->get();

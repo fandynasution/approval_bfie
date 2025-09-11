@@ -26,7 +26,7 @@ class AutoSendController extends Controller
 {
     public function index()
     {
-        $query = DB::connection('BTID')
+        $query = DB::connection('BFIE')
         ->table('mgr.cb_cash_request_appr')
         ->whereNull('sent_mail_date')
         ->where('status', 'P')
@@ -62,7 +62,7 @@ class AutoSendController extends Controller
                 'user_name' => $user_id
             );
 
-            $queryUg = DB::connection('BTID')
+            $queryUg = DB::connection('BFIE')
             ->table('mgr.security_groupings')
             ->where($whereUg)
             ->get();
@@ -73,7 +73,7 @@ class AutoSendController extends Controller
                 'name' => $user_id
             );
 
-            $querysupervisor = DB::connection('BTID')
+            $querysupervisor = DB::connection('BFIE')
             ->table('mgr.security_users')
             ->where($wheresupervisor)
             ->get();
@@ -84,7 +84,7 @@ class AutoSendController extends Controller
                 if ($type == 'Q' && $module == "PO") {
                     $statussend = 'P';
                     $downLevel = '0';
-                    $pdo = DB::connection('BTID')->getPdo();
+                    $pdo = DB::connection('BFIE')->getPdo();
                     $sth = $pdo->prepare("SET NOCOUNT ON; EXEC mgr.x_send_mail_approval_po_request ?, ?, ?, ?, ?, ?, ?, ?, ?;");
                     $sth->bindParam(1, $entity_cd);
                     $sth->bindParam(2, $project_no);
@@ -102,7 +102,7 @@ class AutoSendController extends Controller
                 } else if ($type == 'S' && $module == "PO") {
                     $statussend = 'P';
                     $downLevel = '0';
-                    $pdo = DB::connection('BTID')->getPdo();
+                    $pdo = DB::connection('BFIE')->getPdo();
                     $sth = $pdo->prepare("SET NOCOUNT ON; EXEC mgr.x_send_mail_approval_po_selection ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?;");
                     $sth->bindParam(1, $entity_cd);
                     $sth->bindParam(2, $project_no);
@@ -120,7 +120,7 @@ class AutoSendController extends Controller
 		    \Log::info($doc_no);
                     $statussend = 'P';
                     $downLevel = '0';
-                    $pdo = DB::connection('BTID')->getPdo();
+                    $pdo = DB::connection('BFIE')->getPdo();
                     $sth = $pdo->prepare("SET NOCOUNT ON; EXEC ".$exec." ?, ?, ?, ?, ?, ?, ?, ?, ?, ?;");
                     $sth->bindParam(1, $entity_cd);
                     $sth->bindParam(2, $project_no);
@@ -143,7 +143,7 @@ class AutoSendController extends Controller
                     'level_no'  => $downLevel
                 );
     
-                $querybefore = DB::connection('BTID')
+                $querybefore = DB::connection('BFIE')
                 ->table('mgr.cb_cash_request_appr')
                 ->where($wherebefore)
                 ->get();
@@ -151,7 +151,7 @@ class AutoSendController extends Controller
                 $level_data = $querybefore[0]->status;
                 if ($level_data == 'A'){
                     if ($type == 'Q' && $module == "PO") {
-                        $pdo = DB::connection('BTID')->getPdo();
+                        $pdo = DB::connection('BFIE')->getPdo();
                         $sth = $pdo->prepare("SET NOCOUNT ON; EXEC mgr.x_send_mail_approval_po_request ?, ?, ?, ?, ?, ?, ?, ?, ?;");
                         $sth->bindParam(1, $entity_cd);
                         $sth->bindParam(2, $project_no);
@@ -167,7 +167,7 @@ class AutoSendController extends Controller
                         // Skip this condition, do nothing for type 'D' and module 'CB'
                         continue;  // This will skip the current iteration of the loop
                     } else if ($type == 'S' && $module == "PO") {
-                        $pdo = DB::connection('BTID')->getPdo();
+                        $pdo = DB::connection('BFIE')->getPdo();
                         $sth = $pdo->prepare("SET NOCOUNT ON; EXEC mgr.x_send_mail_approval_po_selection ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?;");
                         $sth->bindParam(1, $entity_cd);
                         $sth->bindParam(2, $project_no);
@@ -182,7 +182,7 @@ class AutoSendController extends Controller
                         $sth->bindParam(11, $reason);
                         $sth->execute();
                     } else {
-                        $pdo = DB::connection('BTID')->getPdo();
+                        $pdo = DB::connection('BFIE')->getPdo();
                         $sth = $pdo->prepare("SET NOCOUNT ON; EXEC ".$exec." ?, ?, ?, ?, ?, ?, ?, ?, ?, ?;");
                         $sth->bindParam(1, $entity_cd);
                         $sth->bindParam(2, $project_no);

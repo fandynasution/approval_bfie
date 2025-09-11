@@ -138,8 +138,18 @@ class PoRequestController extends Controller
                     // Log the success
                     Log::channel('sendmailapproval')->info('Email Purchase Requisition doc_no '.$docNo.' Entity ' . $entityCd.' berhasil dikirim ke: ' . $emailAddress);
 
-                    // return 'Email berhasil dikirim ke: ' . $emailAddress;
-                    return 'success ' . $encryptedData;
+                    // Dispatch job setelah response
+                    RunApprovalStoredProcedureAzure::dispatchAfterResponse(
+                        $entityCd,
+                        $docNo,
+                        $type,
+                        $module,
+                        $levelNo,
+                        $encryptedData,
+                        $app_url
+                    );
+
+                    return 'Email berhasil dikirim ke: ' . $emailAddress;
                 } else {
                     // Email was already sent
                     Log::channel('sendmailapproval')->info('Email Purchase Requisition doc_no '.$docNo.' Entity ' . $entityCd.' already sent to: ' . $emailAddress);
@@ -194,7 +204,7 @@ class PoRequestController extends Controller
             'module'        => $data["type_module"],
         );
 
-        $query = DB::connection('BFIE')
+        $query = DB::connection('BTID')
         ->table('mgr.cb_cash_request_appr')
         ->where($where)
         ->whereIn('status', ["A", "R", "C"])
@@ -225,7 +235,7 @@ class PoRequestController extends Controller
                 'module'        => $data["type_module"],
             );
     
-            $query2 = DB::connection('BFIE')
+            $query2 = DB::connection('BTID')
             ->table('mgr.cb_cash_request_appr')
             ->where($where2)
             ->get();
@@ -312,7 +322,7 @@ class PoRequestController extends Controller
             $imagestatus = "reject.png";
         }
         if ($status == 'R' || $status == 'C') {
-            $check = DB::connection('BFIE')
+            $check = DB::connection('BTID')
                 ->table('mgr.cb_cash_request_appr')
                 ->where([
                     ['doc_no', '=', $data["doc_no"]],
@@ -339,7 +349,7 @@ class PoRequestController extends Controller
                 );
                 return view("email.after", $msg1);
             } else {
-                $pdo = DB::connection('BFIE')->getPdo();
+                $pdo = DB::connection('BTID')->getPdo();
                 $sth = $pdo->prepare("SET NOCOUNT ON; EXEC mgr.x_send_mail_approval_po_request ?, ?, ?, ?, ?, ?, ?, ?, ?;");
                 $sth->bindParam(1, $data["entity_cd"]);
                 $sth->bindParam(2, $data["project_no"]);
@@ -371,7 +381,7 @@ class PoRequestController extends Controller
                 return view("email.after", $msg1);
             }
         } else {
-            $pdo = DB::connection('BFIE')->getPdo();
+            $pdo = DB::connection('BTID')->getPdo();
             $sth = $pdo->prepare("SET NOCOUNT ON; EXEC mgr.x_send_mail_approval_po_request ?, ?, ?, ?, ?, ?, ?, ?, ?;");
             $sth->bindParam(1, $data["entity_cd"]);
             $sth->bindParam(2, $data["project_no"]);

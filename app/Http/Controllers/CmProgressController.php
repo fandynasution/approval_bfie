@@ -183,7 +183,7 @@ class CmProgressController extends Controller
             'module'        => $data["type_module"],
         ];
 
-        $query = DB::connection('BTID')
+        $query = DB::connection('BFIE')
             ->table('mgr.cb_cash_request_appr')
             ->where($where)
             ->whereIn('status', ["A", "R", "C"])
@@ -213,7 +213,7 @@ class CmProgressController extends Controller
                 'module'        => $data["type_module"],
             ];
 
-            $query2 = DB::connection('BTID')
+            $query2 = DB::connection('BFIE')
                 ->table('mgr.cb_cash_request_appr')
                 ->where($where2)
                 ->get();
@@ -297,7 +297,7 @@ class CmProgressController extends Controller
             $descstatus = "Cancelled";
             $imagestatus = "reject.png";
         }
-        $pdo = DB::connection('BTID')->getPdo();
+        $pdo = DB::connection('BFIE')->getPdo();
         $sth = $pdo->prepare("SET NOCOUNT ON; EXEC mgr.xrl_send_mail_approval_cm_progress ?, ?, ?, ?, ?, ?, ?, ?, ?, ?;");
         $sth->bindParam(1, $data["entity_cd"]);
         $sth->bindParam(2, $data["project_no"]);

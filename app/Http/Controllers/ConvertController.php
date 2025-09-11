@@ -15,7 +15,7 @@ class ConvertController extends Controller
 {
     public function export($bg = '', $dept_cd = '')
     {
-        $results = DB::connection('BTID')->select("
+        $results = DB::connection('BFIE')->select("
             select * from mgr.v_gl_budget_export
             where ver_cd = ? and dept_cd = ?
             order by entity_cd, dept_cd
@@ -139,7 +139,7 @@ class ConvertController extends Controller
         $writer->save($filepath);
 
         // Ambil data FTP dari database
-        $ftpConfig = DB::connection('BTID')->table('mgr.ftp_spec')->first();
+        $ftpConfig = DB::connection('BFIE')->table('mgr.ftp_spec')->first();
 
         if (!$ftpConfig) {
             return response()->json(['error' => 'FTP configuration not found.'], 500);
@@ -200,7 +200,7 @@ class ConvertController extends Controller
 
         $fileUrl = rtrim($ftpConfig->URLPDF, '/') . '/ifca-att/Budget_Listing/' . $filename;
 
-        $existing = DB::connection('BTID')->table('mgr.export_log')
+        $existing = DB::connection('BFIE')->table('mgr.export_log')
             ->where('ver_cd', $bg)
             ->where('file_name', $filename)
             ->where('dept_cd', $dept_cd)
@@ -214,7 +214,7 @@ class ConvertController extends Controller
 
         if ($existing) {
             // Update
-            DB::connection('BTID')->table('mgr.export_log')
+            DB::connection('BFIE')->table('mgr.export_log')
                 ->where('ver_cd', $bg)
                 ->where('file_name', $filename)
                 ->where('dept_cd', $dept_cd)
@@ -222,7 +222,7 @@ class ConvertController extends Controller
                 ->update($data);
         } else {
             // Insert
-            DB::connection('BTID')->table('mgr.export_log')
+            DB::connection('BFIE')->table('mgr.export_log')
                 ->insert(array_merge(['ver_cd' => $bg, 'file_name' => $filename, 'dept_cd' => $dept_cd, 'entity_cd' => $entityCd], $data));
         }
 

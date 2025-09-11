@@ -77,7 +77,6 @@ class PoRequestController extends Controller
             'approve_list'  => $approve_data,
             'module'        => "PoRequest",
             'subject'       => "Need Approval for Purchase Requisition No.  ".$data['req_hd_no'],
-            'approve_seq'   => $data["approve_seq"],
         );
 
         $data2Encrypt = array(
@@ -137,9 +136,24 @@ class PoRequestController extends Controller
         
                     // Log the success
                     Log::channel('sendmailapproval')->info('Email Purchase Requisition doc_no '.$docNo.' Entity ' . $entityCd.' berhasil dikirim ke: ' . $emailAddress);
+                    // Dispatch job setelah response
+                    // Dispatch job setelah response
+                    RunApprovalStoredProcedureAzure::dispatchAfterResponse(
+                        $entityCd,
+                        $docNo,
+                        $type,
+                        $module,
+                        $levelNo,
+                        $encryptedData,
+                        $app_url
+                    );
 
-                    // return 'Email berhasil dikirim ke: ' . $emailAddress;
-                    return 'success ' . $encryptedData;
+                    // Simpan ke laravel.log
+                    Log::info('Result dari x_send_mail_approval_azure_ins', [
+                        'entityCd' => $entityCd,
+                        'docNo'    => $docNo,
+                    ]);
+                    return 'Email berhasil dikirim ke: ' . $emailAddress;
                 } else {
                     // Email was already sent
                     Log::channel('sendmailapproval')->info('Email Purchase Requisition doc_no '.$docNo.' Entity ' . $entityCd.' already sent to: ' . $emailAddress);

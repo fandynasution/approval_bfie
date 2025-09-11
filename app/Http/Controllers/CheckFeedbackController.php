@@ -23,7 +23,7 @@ class CheckFeedbackController extends Controller
     {
         ini_set('memory_limit', '8192M');
 
-        $query = DB::connection('BTID')
+        $query = DB::connection('BFIE')
         ->table('mgr.cb_cash_request_appr')
         ->where('mgr.cb_cash_request_appr.status', '=', 'A')
         ->whereDay('mgr.cb_cash_request_appr.approved_date', '=', now()->day)

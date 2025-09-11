@@ -17,7 +17,7 @@ class BlastFaController extends Controller
 {
     public function blast($dept_cd = '')
     {
-        $results = DB::connection('BTID')->select("
+        $results = DB::connection('BFIE')->select("
             SELECT *
             FROM mgr.v_fa_alert_asset_dept
             WHERE dept_cd = ? AND status != 'Audit'

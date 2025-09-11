@@ -32,7 +32,7 @@ class OldFeedbackController extends Controller
         // $day = now()->day;
         $day = '16';
 
-        $query = DB::connection('BTID')
+        $query = DB::connection('BFIE')
         ->table('mgr.cb_cash_request_appr')
         ->where('mgr.cb_cash_request_appr.status', '=', 'A')
         ->whereDay('mgr.cb_cash_request_appr.approved_date', '=', $day)
@@ -126,7 +126,7 @@ class OldFeedbackController extends Controller
             }
         
             if (!file_exists($cacheFilePath)) {
-                $pdo = DB::connection('BTID')->getPdo();
+                $pdo = DB::connection('BFIE')->getPdo();
                 $sth = $pdo->prepare("SET NOCOUNT ON; EXEC ".$exec." ?, ?, ?, ?, ?, ?, ?, ?, ?;");
                 $sth->bindParam(1, $entity_cd);
                 $sth->bindParam(2, $doc_no);

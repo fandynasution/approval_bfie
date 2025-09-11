@@ -18,8 +18,6 @@ class PoModuleService
 
     private function getPoRequestDetails($entity_cd, $doc_no)
     {
-        var_dump($entity_cd);
-        var_dump($doc_no);
         try {
             $results = DB::connection('BFIE')
                 ->table('mgr.po_request_hd as h')
