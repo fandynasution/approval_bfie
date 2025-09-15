@@ -52,6 +52,7 @@ class GetApprControllers extends Controller
                     ->on('a.module', '=', 't.module');
             })
             ->leftJoin('mgr.cf_dept as d', 'a.dept_cd', '=', 'd.dept_cd') // join ke cf_dept
+            ->leftJoin('mgr.cf_staff as s', 'a.staff_id', '=', 's.staff_id') // join ke cf_staff
             ->select(
                 'a.doc_no',
                 'a.entity_cd',
@@ -64,6 +65,7 @@ class GetApprControllers extends Controller
                 'a.trx_type',
                 't.descs as approval_descs',
                 'd.descs as dept_descs', // ambil descs dari cf_dept
+                's.staff_name as submitted_by',
                 DB::raw("MAX(CASE WHEN a.app_status = 'A' THEN a.app_url END) as link_approval"),
                 DB::raw("MAX(CASE WHEN a.app_status = 'R' THEN a.app_url END) as link_revise"),
                 DB::raw("MAX(CASE WHEN a.app_status = 'C' THEN a.app_url END) as link_reject")
@@ -90,7 +92,8 @@ class GetApprControllers extends Controller
                 'a.ref_no',
                 'a.trx_type',
                 't.descs',
-                'd.descs' // tambahin ke group by
+                'd.descs', // tambahin ke group by
+                's.staff_name',
             )
             ->get();
 
