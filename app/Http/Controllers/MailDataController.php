@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Cache;
@@ -136,7 +135,6 @@ class MailDataController extends Controller
                 } else {
                     return view('email/passcheckwithremark', $data);
                 }
-                Artisan::call('config:cache');
             }
         }
     }

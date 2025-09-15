@@ -3,10 +3,7 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
 class SendPoRMail extends Mailable
@@ -23,7 +20,7 @@ class SendPoRMail extends Mailable
      * @param array $dataArray
      * @return void
      */
-    public function __construct($encryptedData, $dataArray)
+    public function __construct(string $encryptedData, string $dataArray)
     {
         $this->encryptedData = $encryptedData;
         $this->dataArray = $dataArray;

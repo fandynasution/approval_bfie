@@ -9,9 +9,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
-use App\Mail\SendMail;
 use App\Mail\SendPoRMail;
-use App\Jobs\RunApprovalStoredProcedureAzure;
+use Exception;
 
 class PoRequestController extends Controller
 {
